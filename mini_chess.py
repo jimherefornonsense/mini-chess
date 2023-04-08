@@ -1,7 +1,7 @@
 import copy
 
-from bit_board import BitBoard
-from const import *
+from .bit_board import BitBoard
+from .const import *
 
 class MiniChess(BitBoard):
     def __init__(self, board):

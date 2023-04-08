@@ -13,7 +13,7 @@ Bit digit on board
 +---+---+---+---+---+
 """
 
-from const import *
+from .const import *
 
 def print_mask(mask):
     mask_str = (bin(mask)[2:])[::-1]
