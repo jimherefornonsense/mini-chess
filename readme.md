@@ -1,0 +1,1 @@
+# A mini chess library.
