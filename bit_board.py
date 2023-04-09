@@ -100,7 +100,7 @@ class BitBoard:
             board = mirrored_white | mirrored_black
             enemy = mirrored_white
         
-        moves = 0
+        moves = bit_digit # Make staling a valid move
         if piece == 'p':
             moves = self.pawn_valid_moves(bit_digit, board, enemy)
         elif piece == 'r':

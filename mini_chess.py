@@ -77,8 +77,9 @@ class MiniChess(BitBoard):
         self.check_queen_promotion(to_x, to_y)
     
     def push(self, move):
-        if self.is_legal_move(move):
-            self.make_move(move)
+        if self.is_legal_move(move) or move[:2] == move[2:]:
+            if move[:2] != move[2:]:
+                self.make_move(move)
             return True
         return False
     
@@ -144,6 +145,15 @@ class MiniChess(BitBoard):
 
         return temp_board.is_in_check(self._turn)
     
+    def piece_at(self, uci):
+        """Piece at UCI coords"""
+        x = ord(uci[0]) - ord("a")
+        y = BOARD_ROW - int(uci[1])
+        if self._turn == 1:
+            x, y = self.mirror_coords(x, y)
+
+        return self._board[y][x]
+
     def generate_all_moves(self):
         # Loop over all board positions
         for y in range(BOARD_ROW):
