@@ -102,17 +102,17 @@ class BitBoard:
         
         moves = bit_digit # Make staling a valid move
         if piece == 'p':
-            moves = self.pawn_valid_moves(bit_digit, board, enemy)
+            moves |= self.pawn_valid_moves(bit_digit, board, enemy)
         elif piece == 'r':
-            moves = self.rook_valid_moves(bit_digit, board, enemy)
+            moves |= self.rook_valid_moves(bit_digit, board, enemy)
         elif piece == 'n':
-            moves = self.knight_valid_moves(bit_digit, board, enemy)
+            moves |= self.knight_valid_moves(bit_digit, board, enemy)
         elif piece == 'b':
-            moves = self.bishop_valid_moves(bit_digit, board, enemy)
+            moves |= self.bishop_valid_moves(bit_digit, board, enemy)
         elif piece == 'q':
-            moves = self.queen_valid_moves(bit_digit, board, enemy)
+            moves |= self.queen_valid_moves(bit_digit, board, enemy)
         elif piece == 'k':
-            moves = self.king_valid_moves(bit_digit, board, enemy)
+            moves |= self.king_valid_moves(bit_digit, board, enemy)
         
         bit_at = 0
         while moves != 0:
