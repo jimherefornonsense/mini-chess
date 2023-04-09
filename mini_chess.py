@@ -153,6 +153,16 @@ class MiniChess(BitBoard):
             x, y = self.mirror_coords(x, y)
 
         return self._board[y][x]
+    
+    def piece_map(self):
+        for y in range(BOARD_ROW):
+            for x in range(BOARD_COL):
+                piece = self._board[y][x]
+                if piece == ".":
+                    continue
+                mirror_x, mirror_y = self.mirror_coords(x, y)
+                yield mirror_x, mirror_y, piece
+                
 
     def generate_all_moves(self):
         # Loop over all board positions
