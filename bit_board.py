@@ -62,19 +62,40 @@ class BitBoard:
 
         return mirrored_board
 
-    def make_move(self, from_x, from_y, to_x, to_y):
+    # def make_move(self, from_x, from_y, to_x, to_y):
+    #     # Compute the bit indices of the source and destination squares
+    #     from_bit_digit = from_y * BOARD_COL + from_x
+    #     to_bit_digit = to_y * BOARD_COL + to_x
+        
+    #     # Remove the source piece from the bitboard
+    #     is_white = False
+    #     if self.white_pieces & (1 << from_bit_digit):
+    #         self.white_pieces &= ~(1 << from_bit_digit)
+    #         is_white = True
+    #     else:
+    #         self.black_pieces &= ~(1 << from_bit_digit)
+
+    #     # Add the destination piece to the bitboard
+    #     if is_white:
+    #         self.white_pieces |= (1 << to_bit_digit)
+    #         self.black_pieces &= ~(1 << to_bit_digit)
+    #     else:
+    #         self.black_pieces |= (1 << to_bit_digit)
+    #         self.white_pieces &= ~(1 << to_bit_digit)
+            
+    def piece_up(self, from_x, from_y):
         # Compute the bit indices of the source and destination squares
         from_bit_digit = from_y * BOARD_COL + from_x
-        to_bit_digit = to_y * BOARD_COL + to_x
         
         # Remove the source piece from the bitboard
-        is_white = False
         if self.white_pieces & (1 << from_bit_digit):
             self.white_pieces &= ~(1 << from_bit_digit)
-            is_white = True
         else:
             self.black_pieces &= ~(1 << from_bit_digit)
-
+            
+    def piece_down(self, to_x, to_y, is_white):
+        to_bit_digit = to_y * BOARD_COL + to_x
+        
         # Add the destination piece to the bitboard
         if is_white:
             self.white_pieces |= (1 << to_bit_digit)
@@ -82,6 +103,7 @@ class BitBoard:
         else:
             self.black_pieces |= (1 << to_bit_digit)
             self.white_pieces &= ~(1 << to_bit_digit)
+        
 
     def digit_to_coords(self, digit):
         return (digit % BOARD_COL, digit // BOARD_ROW)

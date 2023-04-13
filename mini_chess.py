@@ -2,12 +2,17 @@ import copy
 
 from .bit_board import BitBoard
 from .const import *
+from collections import deque
 
 class MiniChess(BitBoard):
-    def __init__(self, board):
+    def __init__(self, board, move_time = 1):
         self._turn = 0
         # Initialize the board with starting positions
         self._board = board
+        # Moving queue for pieces
+        self._moving_queue = deque()
+        self._move_time = move_time
+        self._time = 0
         super().__init__(self._board)
 
     def __str__(self):
@@ -52,36 +57,101 @@ class MiniChess(BitBoard):
         #     return False
         return True
 
-    def make_move(self, move):
+    # def make_move(self, move):
+    #     # Convert the move to board coordinates
+    #     from_x, from_y, to_x, to_y = self.move_to_coords(move)
+    #     if self._turn == 1:
+    #         from_x, from_y = self.mirror_coords(from_x, from_y)
+    #         to_x, to_y = self.mirror_coords(to_x, to_y)
+
+    #     # Update bitboard
+    #     super().make_move(from_x, from_y, to_x, to_y)
+
+    #     # Make the move on the board
+    #     self._board[to_y] = (
+    #         self._board[to_y][:to_x]
+    #         + self._board[from_y][from_x]
+    #         + self._board[to_y][to_x + 1 :]
+    #     )
+    #     self._board[from_y] = (
+    #         self._board[from_y][:from_x]
+    #         + "."
+    #         + self._board[from_y][from_x + 1 :]
+    #     )
+        
+    #     self.check_queen_promotion(to_x, to_y)
+        
+    def parse_move(self, move):
         # Convert the move to board coordinates
         from_x, from_y, to_x, to_y = self.move_to_coords(move)
         if self._turn == 1:
             from_x, from_y = self.mirror_coords(from_x, from_y)
             to_x, to_y = self.mirror_coords(to_x, to_y)
-
+        
+        piece = self._board[from_y][from_x]
+        
+        return piece, (from_x, from_y), (to_x, to_y)
+    
+    def piece_up(self, from_x, from_y):
         # Update bitboard
-        super().make_move(from_x, from_y, to_x, to_y)
-
-        # Make the move on the board
-        self._board[to_y] = (
-            self._board[to_y][:to_x]
-            + self._board[from_y][from_x]
-            + self._board[to_y][to_x + 1 :]
-        )
+        super().piece_up(from_x, from_y)
+        
+        # Take the piece from the board
         self._board[from_y] = (
             self._board[from_y][:from_x]
             + "."
             + self._board[from_y][from_x + 1 :]
         )
         
+    def piece_down(self, to_x, to_y, piece, is_white):
+        # Update bitboard
+        super().piece_down(to_x, to_y, is_white)
+        
+        # Make the move on the board
+        self._board[to_y] = (
+            self._board[to_y][:to_x]
+            + piece
+            + self._board[to_y][to_x + 1 :]
+        )
         self.check_queen_promotion(to_x, to_y)
     
     def push(self, move):
-        if self.is_legal_move(move) or move[:2] == move[2:]:
-            if move[:2] != move[2:]:
-                self.make_move(move)
-            return True
-        return False
+        if not self.is_legal_move(move):
+            return False
+        
+        if move[:2] != move[2:]:        
+            piece, from_coord, to_coord = self.parse_move(move)
+            moving_piece = {"color": self._turn,
+                            "from_coord": from_coord,
+                            "to_coord": to_coord,
+                            "piece": piece,
+                            "time_at": self._time + self._move_time}
+            
+            self.piece_up(from_coord[0], from_coord[1])
+            self._moving_queue.append(moving_piece)
+            # self.make_move(move)
+            
+        return True
+        
+    def update_time(self):
+        self._time += 1
+        if len(self._moving_queue) != 0 and self._moving_queue[0]["time_at"] == self._time:
+            moving_piece = self._moving_queue.popleft()
+            is_white = True if moving_piece["color"] == 0 else False
+            from_x, from_y = moving_piece["from_coord"]
+            to_x, to_y = moving_piece["to_coord"]
+            piece = moving_piece["piece"]
+            
+            self.piece_down(to_x, to_y, piece, is_white)
+            
+            if not is_white:
+                from_x, from_y = self.mirror_coords(from_x, from_y)
+                to_x, to_y = self.mirror_coords(to_x, to_y)
+            
+            uci = self.coords_to_move(from_x, from_y, to_x, to_y)
+            return (uci, moving_piece["piece"])
+        else:
+            return None
     
     def check_queen_promotion(self, x, y):
         if y == 0:
@@ -155,14 +225,20 @@ class MiniChess(BitBoard):
         return self._board[y][x]
     
     def piece_map(self):
+        # Stale pieces
         for y in range(BOARD_ROW):
             for x in range(BOARD_COL):
                 piece = self._board[y][x]
                 if piece == ".":
                     continue
                 mirror_x, mirror_y = self.mirror_coords(x, y)
-                yield mirror_x, mirror_y, piece
-                
+                yield mirror_x, mirror_y
+        
+        # Moving pieces
+        for i in len(self._moving_queue):
+            mirror_x, mirror_y = self.mirror_coords(self._moving_queue[i]["to_coord"])
+            yield mirror_x, mirror_y
+            
 
     def generate_all_moves(self):
         # Loop over all board positions
