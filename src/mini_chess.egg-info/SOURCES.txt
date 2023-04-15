@@ -1,0 +1,11 @@
+pyproject.toml
+readme.md
+setup.cfg
+src/mini_chess/__init__.py
+src/mini_chess/bit_board.py
+src/mini_chess/const.py
+src/mini_chess/mini_chess.py
+src/mini_chess.egg-info/PKG-INFO
+src/mini_chess.egg-info/SOURCES.txt
+src/mini_chess.egg-info/dependency_links.txt
+src/mini_chess.egg-info/top_level.txt
