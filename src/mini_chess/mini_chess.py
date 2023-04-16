@@ -1,11 +1,12 @@
 import copy
 
 from .bit_board import BitBoard
-from .const import *
 from collections import deque
 
 class MiniChess(BitBoard):
     def __init__(self, board, move_time = 1):
+        super().__init__(board)
+        
         self._turn = 0
         # Initialize the board with starting positions
         self._board = board
@@ -13,7 +14,6 @@ class MiniChess(BitBoard):
         self._moving_queue = deque()
         self._move_time = move_time
         self._time = 0
-        super().__init__(self._board)
 
     def __str__(self):
         # Convert the board to a printable string
@@ -27,23 +27,23 @@ class MiniChess(BitBoard):
             self._turn = 1
 
     def mirror_coords(self, x, y):
-        return x, BOARD_ROW - (y + 1) 
+        return x, self.row - (y + 1) 
 
     def move_to_coords(self, move):
         # Convert the move to board coordinates
         from_x = ord(move[0]) - ord("a")
-        from_y = BOARD_ROW - int(move[1])
+        from_y = self.row - int(move[1])
         to_x = ord(move[2]) - ord("a")
-        to_y = BOARD_ROW - int(move[3])
+        to_y = self.row - int(move[3])
 
         return from_x, from_y, to_x, to_y
 
     def coords_to_move(self, from_x, from_y, to_x, to_y):
         # Convert the coordinates to standard algebraic notation
         from_col = chr(ord("a") + from_x)
-        from_row = str(BOARD_ROW - from_y)
+        from_row = str(self.row - from_y)
         to_col = chr(ord("a") + to_x)
-        to_row = str(BOARD_ROW - to_y)
+        to_row = str(self.row - to_y)
 
         return from_col + from_row + to_col + to_row
 
@@ -57,30 +57,17 @@ class MiniChess(BitBoard):
         #     return False
         return True
 
-    # def make_move(self, move):
-    #     # Convert the move to board coordinates
-    #     from_x, from_y, to_x, to_y = self.move_to_coords(move)
-    #     if self._turn == 1:
-    #         from_x, from_y = self.mirror_coords(from_x, from_y)
-    #         to_x, to_y = self.mirror_coords(to_x, to_y)
+    def has_won(self):
+        opponent = 1 if self._turn == 0 else 0
 
-    #     # Update bitboard
-    #     super().make_move(from_x, from_y, to_x, to_y)
-
-    #     # Make the move on the board
-    #     self._board[to_y] = (
-    #         self._board[to_y][:to_x]
-    #         + self._board[from_y][from_x]
-    #         + self._board[to_y][to_x + 1 :]
-    #     )
-    #     self._board[from_y] = (
-    #         self._board[from_y][:from_x]
-    #         + "."
-    #         + self._board[from_y][from_x + 1 :]
-    #     )
-        
-    #     self.check_queen_promotion(to_x, to_y)
-        
+        for piece in self._moving_queue:
+            if piece["color"] == opponent:
+                return False
+        if self.get_color_bits(opponent) != 0:
+            return False
+    
+        return True
+    
     def parse_move(self, move):
         # Convert the move to board coordinates
         from_x, from_y, to_x, to_y = self.move_to_coords(move)
@@ -129,7 +116,6 @@ class MiniChess(BitBoard):
             
             self.piece_up(from_coord[0], from_coord[1])
             self._moving_queue.append(moving_piece)
-            # self.make_move(move)
             
         return True
         
@@ -174,8 +160,8 @@ class MiniChess(BitBoard):
         king = "K" if color == 0 else "k"
 
         # Find the king of the given color
-        for from_y in range(BOARD_ROW):
-            for from_x in range(BOARD_COL):
+        for from_y in range(self.row):
+            for from_x in range(self.col):
                 piece = self._board[from_y][from_x]
                 if piece == king:
                     return from_x, from_y
@@ -195,8 +181,8 @@ class MiniChess(BitBoard):
         if self._turn == 1:
             king_x, king_y = self.mirror_coords(king_x, king_y)
 
-        for y in range(BOARD_ROW):
-            for x in range(BOARD_COL):
+        for y in range(self.row):
+            for x in range(self.col):
                 from_x = x
                 from_y = y
                 if self._turn == 1:
@@ -218,7 +204,7 @@ class MiniChess(BitBoard):
     def piece_at(self, uci):
         """Piece at UCI coords"""
         x = ord(uci[0]) - ord("a")
-        y = BOARD_ROW - int(uci[1])
+        y = self.row - int(uci[1])
         if self._turn == 1:
             x, y = self.mirror_coords(x, y)
 
@@ -226,8 +212,8 @@ class MiniChess(BitBoard):
     
     def piece_map(self):
         # Stale pieces
-        for y in range(BOARD_ROW):
-            for x in range(BOARD_COL):
+        for y in range(self.row):
+            for x in range(self.col):
                 piece = self._board[y][x]
                 if piece == ".":
                     continue
@@ -242,8 +228,8 @@ class MiniChess(BitBoard):
 
     def generate_all_moves(self):
         # Loop over all board positions
-        for y in range(BOARD_ROW):
-            for x in range(BOARD_COL):
+        for y in range(self.row):
+            for x in range(self.col):
                 piece = self._board[y][x]
                 if piece != ".":
                     # Filter pieces by color
