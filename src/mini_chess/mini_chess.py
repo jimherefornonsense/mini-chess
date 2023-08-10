@@ -57,16 +57,31 @@ class MiniChess(BitBoard):
         #     return False
         return True
 
-    def has_won(self):
-        opponent = 1 if self._turn == 0 else 0
+    def has_winner(self):
+        # Return a winner 0/1 if k/K is captured, otherwise, return None
+        # If K and k are still alive
+        K_n_k = [False, False]
 
+        # Check on flying pieces
         for piece in self._moving_queue:
-            if piece["color"] == opponent:
-                return False
-        if self.get_color_bits(opponent) != 0:
-            return False
-    
-        return True
+            if piece["piece"] == "K":
+                K_n_k[0] = True
+            elif piece["piece"] == "k":
+                K_n_k[1] = True
+        # Check on board
+        for from_y in range(self.row):
+            for from_x in range(self.col):
+                piece = self._board[from_y][from_x]
+                if piece == "K":
+                    K_n_k[0] = True
+                elif piece == "k":
+                    K_n_k[1] = True
+            
+        if not K_n_k[0]:
+            return 1
+        if not K_n_k[1]:
+            return 0
+        return None
     
     def parse_move(self, move):
         # Convert the move to board coordinates

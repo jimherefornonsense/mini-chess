@@ -4,7 +4,7 @@
 * Support multiple sizes of chess board  
 * Support piece delay movement to realize trevel time for moving from A to B  
 * Be aware of the same color pieces collision will result as capture move when the board has been set delay more than 1  
-* A winner when the other color pieces are captured  
+* A winner when the other color's king piece is captured  
 
 ## Example
 ```
